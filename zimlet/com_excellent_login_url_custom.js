@@ -123,44 +123,49 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
                 throw new Error("Zimlet " + zName + " not found on server");
             }
 
-            var rawXml = "";
+            var rawXml = null;
             if (zObj.a) {
                 for (var i = 0; i < zObj.a.length; i++) {
                     if (zObj.a[i].n === "zimbraZimletHandlerConfig") {
+                        if (zObj.a[i].pd === "1" || zObj.a[i].pd === 1) {
+                            throw new Error("Permission denied reading zimlet configuration for " + zName);
+                        }
                         rawXml = zObj.a[i]._content;
                         break;
                     }
                 }
-            } else if (zObj._attrs && zObj._attrs.zimbraZimletHandlerConfig) {
+            } else if (zObj._attrs && zObj._attrs.zimbraZimletHandlerConfig !== undefined) {
                 rawXml = zObj._attrs.zimbraZimletHandlerConfig;
-            }
-
-            if (!rawXml) {
-                throw new Error("Configuration missing: zimbraZimletHandlerConfig attribute not found on " + zName);
             }
 
             var enabled = "false";
             var label = ZaExcellentLoginSso.DEFAULT_LABEL;
             var url = "";
 
-            var parser = new DOMParser();
-            var xmlDoc = parser.parseFromString(rawXml, "application/xml");
-            var parseErr = xmlDoc.getElementsByTagName("parsererror");
-            if (parseErr && parseErr.length > 0) {
-                throw new Error("Failed to parse zimbraZimletHandlerConfig XML: " + parseErr[0].textContent);
-            }
-            var props = xmlDoc.getElementsByTagName("property");
-            for (var p = 0; p < props.length; p++) {
-                var pName = props[p].getAttribute("name");
-                var pVal = props[p].textContent || "";
-                if (pName === "enabled") enabled = pVal;
-                else if (pName === "label") label = pVal;
-                else if (pName === "url") url = pVal;
+            if (rawXml !== null && typeof rawXml === "string" && rawXml.trim().length > 0) {
+                var parser = new DOMParser();
+                var xmlDoc = parser.parseFromString(rawXml, "application/xml");
+                var parseErr = xmlDoc.getElementsByTagName("parsererror");
+                if (parseErr && parseErr.length > 0) {
+                    throw new Error("Failed to parse zimbraZimletHandlerConfig XML: " + parseErr[0].textContent);
+                }
+                var rootEl = xmlDoc.documentElement;
+                if (!rootEl || rootEl.tagName !== "zimletConfig" || rootEl.getAttribute("name") !== zName) {
+                    throw new Error("Unexpected zimlet configuration document");
+                }
+                var props = xmlDoc.getElementsByTagName("property");
+                for (var p = 0; p < props.length; p++) {
+                    var pName = props[p].getAttribute("name");
+                    var pVal = props[p].textContent || "";
+                    if (pName === "enabled") enabled = pVal;
+                    else if (pName === "label") label = pVal;
+                    else if (pName === "url") url = pVal;
+                }
             }
 
             this.attrs = {
                 enabled: enabled === "true" ? "true" : "false",
-                label: label || ZaExcellentLoginSso.DEFAULT_LABEL,
+                label: (label && label.trim().length > 0) ? label : ZaExcellentLoginSso.DEFAULT_LABEL,
                 url: url || ""
             };
         };
@@ -364,8 +369,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
                                             var bg = isErr ? "#fce8e6" : "#e6f4ea";
                                             var border = isErr ? "#fad2cf" : "#ceead6";
                                             var color = isErr ? "#c5221f" : "#137333";
-                                            var icon = isErr ? "✕ " : "✓ ";
-                                            return '<div id="excellent_sso_status_box" style="padding:10px 14px; margin:4px 0 14px 0; border:1px solid ' + border + '; background:' + bg + '; color:' + color + '; font-weight:600; font-size:13px; border-radius:4px;">' + icon + AjxStringUtil.htmlEncode(val) + '</div>';
+                                            return '<div id="excellent_sso_status_box" style="padding:10px 14px; margin:4px 0 14px 0; border:1px solid ' + border + '; background:' + bg + '; color:' + color + '; font-weight:600; font-size:13px; border-radius:4px;">' + AjxStringUtil.htmlEncode(val) + '</div>';
                                         }
                                     },
                                     {
