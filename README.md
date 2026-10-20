@@ -114,7 +114,8 @@ verifies the vendor content itself.
    zmmailboxdctl restart
    ```
 
-   On the demo server, login was unavailable for about 34–37 seconds.
+   On the demo server, the three restarts during testing took about 23 to 37
+   seconds of login unavailability.
 
 6. Verify (see [Verify a single server](#verify-a-single-server)). The link
    stays hidden until you enable it in step 7.
@@ -305,11 +306,12 @@ zmprov gas mailbox
 - For each proxy, use the effective value: the server's own value, or the
   global value if it is inherited. Combine the targets of all proxies. Every
   listed mailbox server must be patched.
-- If the attribute is empty, the source treats every mailbox server as a login
-  target. This is a conservative rule, not a guarantee. Routing also depends on
-  the webclient/mailbox role, `zimbraReverseProxyLookupTarget`, the mail mode,
-  and the ports. Cross-check against the upstream list in the nginx configuration
-  generated on each proxy.
+- If the attribute is empty, the source disables the dedicated login upstream
+  block, so general web routing applies. Patching every mailbox server is an
+  operational policy chosen to be conservative. It is not the source's behavior.
+  Routing also depends on the webclient/mailbox role,
+  `zimbraReverseProxyLookupTarget`, the mail mode, and the ports. Cross-check
+  against the upstream list in the nginx configuration generated on each proxy.
 - Patch the archive server too when it runs `zimbra-store`, even if it is not
   in the upstream list. This keeps the login page the same on every mailbox node.
 - Do not patch LDAP, MTA, or proxy-only servers.
@@ -324,10 +326,17 @@ zmprov gs MAILBOX_HOST zimbraMailMode zimbraMailPort zimbraMailSSLPort
 
 Use the same steps as single server, but run them per node:
 
-- **Update:** the config export and restore happen once, around the single
-  `zmzimletctl deploy` from the node you chose. On each other node, copy the new
-  source, roll back the installed fragment if it changed, run `apply`, restart
-  `mailboxd`, and verify. Finish and verify one node before starting the next.
+- **Update:** the config export and restore, and the single `zmzimletctl deploy`,
+  happen once from the node you chose. That node also runs the per-node steps
+  below, in the same order as every other node. For each node, one at a time:
+  1. If `patch/link.jsp.fragment` or `patch-login.py` changed, roll back the
+     **installed** patch as root, using the script and fragment still on that
+     node. Do this before copying anything new.
+  2. Copy the new source to `/usr/local/share/zimbra-login-sso`.
+  3. Run `patch-login.py apply` as root.
+  4. Restart `mailboxd` as `zimbra`.
+  5. Verify the node (see [Verify each node](#verify-each-node)). Finish and
+     verify one node before starting the next.
 - **Re-apply after a Zimbra upgrade:** check the vendor baseline per node. Each
   node can run a different Zimbra patch level.
 - **Rollback:** set the config to disabled once. Then roll back and restart
