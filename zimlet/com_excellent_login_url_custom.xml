@@ -1,0 +1,3 @@
+<zimlet name="com_excellent_login_url_custom" version="1.0.0" label="Login SSO link" description="Global manual SSO login link configuration" extension="true">
+  <include>com_excellent_login_url_custom.js</include>
+</zimlet>
