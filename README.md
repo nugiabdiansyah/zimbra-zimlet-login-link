@@ -40,12 +40,17 @@ Run from a reviewed checkout of this repository (Python 3, no pip packages):
 
 ```sh
 mkdir -p dist
-(cd zimlet && python3 -m zipfile -c ../dist/com_excellent_login_url_custom.zip com_excellent_login_url_custom.xml com_excellent_login_url_custom.js config_template.xml)
+(cd zimlet && python3 -m zipfile -c ../dist/com_excellent_login_url_custom.zip com_excellent_login_url_custom.xml com_excellent_login_url_custom.js)
 python3 -m zipfile -l dist/com_excellent_login_url_custom.zip
 ```
 
-The listing should show exactly three entries: the manifest XML, the JS, and
-`config_template.xml`.
+The listing must show exactly **two** entries: the manifest XML and the JS.
+Rebuild with the command above (it replaces the ZIP); do not reuse an older
+three-file ZIP. `zimlet/config_template.xml` stays in source as an optional
+manual example, but **must not be included in the deploy ZIP**. Without a
+template, both `deploy` and `-l deploy` preserve existing LDAP configuration.
+Do not package `zimlet/*` with a wildcard. This behavior was verified on
+10.1.21 FOSS; other versions require the same preservation check.
 
 ## Copy source to a server
 
@@ -85,13 +90,18 @@ verifies the vendor content itself.
 
 1. Build the ZIP and copy the source to the server (sections above).
 2. Check the vendor baseline (above).
-3. Deploy the zimlet as `zimbra`. A first install has no existing config to
-   export, so keep the disabled defaults:
+3. Deploy the template-free ZIP as `zimbra`. A first install has no config
+   attribute yet: the login link remains hidden. CLI `get` returns effective
+   defaults (disabled, `Login via SSO`, empty URL) without writing them; the first
+   `set` creates the configuration:
 
    ```sh
    zmzimletctl deploy /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip
    zmprov fc -a zimlet com_excellent_login_url_custom
    ```
+
+   Until the Admin Console empty-config handling is updated to the contract,
+   use the CLI for the first `set`. Existing configured entries are unaffected.
 
 4. Apply the JSP patch as root:
 
@@ -135,7 +145,9 @@ Use this when `zimlet/`, `patch/link.jsp.fragment`, or `patch-login.py` changes.
 The patch can only be re-applied on top of itself, so roll back the installed
 version before copying the new one.
 
-1. Export the current config as `zimbra`. Stop if the export fails:
+1. Take a recovery snapshot of the current config as `zimbra` for the
+   comparison below. Preservation does not depend on restoring this file.
+   Stop if this export fails:
 
    ```sh
    umask 077
@@ -152,14 +164,20 @@ version before copying the new one.
 
 3. Copy the new source (see [Copy source to a server](#copy-source-to-a-server)).
    `backups/` is not overwritten.
-4. Deploy the new ZIP as `zimbra`, then restore the exported config and flush
-   the cache. `deploy` can reset the config to ZIP defaults:
+4. Deploy the **two-file, template-free ZIP** as `zimbra`, then flush the
+   cache and compare against the snapshot. Existing LDAP config is preserved;
+   do not run `configure` merely to redeploy:
 
    ```sh
    zmzimletctl deploy /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip
-   zmzimletctl configure "$HOME/login-sso-before-deploy.xml"
    zmprov fc -a zimlet com_excellent_login_url_custom
+   python3 /usr/local/share/zimbra-login-sso/sso-config.py get > "$HOME/login-sso-after-deploy.xml"
+   cmp "$HOME/login-sso-before-deploy.xml" "$HOME/login-sso-after-deploy.xml"
    ```
+
+   A mismatch is an error: stop and investigate the ZIP/server behavior. Keep
+   the snapshot for deliberate recovery with `zmzimletctl configure`; never
+   restore the default template over an existing config.
 
 5. Apply the new patch as root:
 
@@ -192,15 +210,21 @@ absolute HTTPS URL with no credentials, whitespace, or control characters.
 `enabled=true` requires a URL. Invalid input is rejected before anything is
 written. The label is at most 128 characters.
 
-For a raw CLI workflow, `zmzimletctl getConfigTemplate` reads the ZIP defaults,
-not the live settings. Use it only for a new config, then run
+For a raw CLI workflow, copy `zimlet/config_template.xml` from source to a
+separate writable XML file, edit all values deliberately, then run
 `zmzimletctl configure <config.xml>` and
 `zmprov fc -a zimlet com_excellent_login_url_custom`.
+The deploy ZIP has no template, so `zmzimletctl getConfigTemplate <zip>` is no
+longer a way to obtain defaults; use the source example or `sso-config.py get`.
 
 ### Re-apply after a Zimbra upgrade
 
-A Zimbra upgrade can overwrite the patched `login.jsp`. The LDAP config is kept,
-but the link is only rendered again after a re-apply.
+A Zimbra upgrade can overwrite the patched `login.jsp`. Re-apply restores its
+rendering and does not write the LDAP config. Setup may re-deploy custom ZIPs
+placed in standard/extras zimlet directories; this package keeps its ZIP outside
+those directories. If you maintain such a copy, keep it template-free too.
+Back up and check config before/after an upgrade; a full Zimbra upgrade has not
+been exercised by this package.
 
 1. Before the upgrade, back up LDAP, `/usr/local/share/zimbra-login-sso`
    (including `backups/`), and the exported config.
@@ -287,7 +311,7 @@ not install anything on them. Run each step on each node by hand, in order.
 | Copy source to `/usr/local/share/zimbra-login-sso` | Each mailbox node | **Per node** (not distributed) |
 | Check vendor baseline and run `patch-login.py apply` | Each mailbox node that renders login | **Per node** |
 | `zmmailboxdctl restart` | Each mailbox node | **Per node**, one at a time |
-| Export and restore config around `deploy` and `-l deploy` | Node where the deploy runs | Only when deploying |
+| Optional config snapshot and comparison around template-free `deploy` / `-l deploy` | Node where deploy runs | Recommended before/after deployment; no default restore |
 | `zmprov fc -a zimlet com_excellent_login_url_custom` | Every server | After any config or deploy change |
 
 Config changes need no restart. A restart is only needed after a JSP change
@@ -326,8 +350,9 @@ zmprov gs MAILBOX_HOST zimbraMailMode zimbraMailPort zimbraMailSSLPort
 
 Use the same steps as single server, but run them per node:
 
-- **Update:** the config export and restore, and the single `zmzimletctl deploy`,
-  happen once from the node you chose. That node also runs the per-node steps
+- **Update:** take an optional config snapshot, run one template-free
+  `zmzimletctl deploy`, flush cache, and compare config from the chosen node.
+  No automatic config restore is needed. That node also runs the per-node steps
   below, in the same order as every other node. For each node, one at a time:
   1. If `patch/link.jsp.fragment` or `patch-login.py` changed, roll back the
      **installed** patch as root, using the script and fragment still on that
@@ -345,19 +370,23 @@ Use the same steps as single server, but run them per node:
 ### Fix a node that is missing the zimlet files
 
 Use this only when `ls /opt/zimbra/zimlets-deployed/com_excellent_login_url_custom/`
-is empty on a node after the single deploy. Export the config first, then copy
-the ZIP to that node and deploy locally, then restore the config and flush:
+is empty on a node after the single deploy. Copy the **template-free** ZIP to
+that node. An optional config snapshot and comparison provide a recovery check;
+local deploy preserves the shared config without a restore:
 
 ```sh
 umask 077
 python3 /usr/local/share/zimbra-login-sso/sso-config.py get > "$HOME/login-sso-before-deploy.xml"
 zmzimletctl -l deploy /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip
-zmzimletctl configure "$HOME/login-sso-before-deploy.xml"
 zmprov fc -a zimlet com_excellent_login_url_custom
+python3 /usr/local/share/zimbra-login-sso/sso-config.py get > "$HOME/login-sso-after-deploy.xml"
+cmp "$HOME/login-sso-before-deploy.xml" "$HOME/login-sso-after-deploy.xml"
 ```
 
-Local deploy with `-l` skips remote distribution, but it still writes local
-deploy metadata and configuration to LDAP. Keep the export and the restore.
+Local deploy with `-l` skips remote distribution but still updates deployment
+metadata in LDAP. With this template-free ZIP it does not reset handler config.
+A mismatch is an error: stop; use the saved snapshot only for deliberate
+recovery. No per-node installer or node detection is provided.
 
 ### Verify each node
 

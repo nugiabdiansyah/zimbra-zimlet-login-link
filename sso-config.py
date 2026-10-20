@@ -8,15 +8,38 @@ import xml.etree.ElementTree as ET
 from urllib.parse import urlsplit
 
 NAME = 'com_excellent_login_url_custom'
+DEFAULTS = {'enabled': 'false', 'label': 'Login via SSO', 'url': ''}
+
+def config_or_default(raw_xml=None):
+    if raw_xml is None or not raw_xml.strip():
+        config = ET.Element('zimletConfig', name=NAME, version='1.0.0')
+    else:
+        config = ET.fromstring(raw_xml)
+        if config.tag != 'zimletConfig' or config.get('name') != NAME:
+            raise SystemExit('Unexpected zimlet configuration document')
+    group = config.find('global')
+    if group is None:
+        group = ET.SubElement(config, 'global')
+    present = {e.get('name') for e in group.findall('property')}
+    for key, value in DEFAULTS.items():
+        if key not in present:
+            ET.SubElement(group, 'property', name=key).text = value
+    return config
+
 def get_config():
     # Raw zmzimletctl configure writes LDAP without invalidating mailboxd's cache.
     subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', '-a', 'zimlet', NAME], check=True, stdout=subprocess.DEVNULL)
     response = subprocess.check_output(['/opt/zimbra/bin/zmsoap', '-z', 'GetZimletRequest', '@attrs=zimbraZimletHandlerConfig', 'zimlet', '@name=' + NAME])
     root = ET.fromstring(response)
-    for e in root.iter():
+    zimlet = root.find('{urn:zimbraAdmin}zimlet')
+    if root.tag != '{urn:zimbraAdmin}GetZimletResponse' or zimlet is None or zimlet.get('name') != NAME:
+        raise SystemExit('Zimlet entry missing or invalid SOAP response')
+    for e in zimlet:
         if e.tag.rsplit('}', 1)[-1] == 'a' and e.get('n') == 'zimbraZimletHandlerConfig':
-            return ET.fromstring(e.text)
-    raise SystemExit('Configuration missing')
+            if e.get('pd') == '1':
+                raise SystemExit('Permission denied reading zimlet configuration')
+            return config_or_default(e.text)
+    return config_or_default()
 
 def valid_url(url):
     try:

@@ -2,8 +2,9 @@ Backend contract — com_excellent_login_url_custom, version 1.0.0
 ===================================================
 
 Scope: one global optional manual link, all domains. No SSO protocol integration.
-The Admin Console form is a separate Front-End deliverable. The deployed admin
-zimlet currently contains its manifest and a reserved JS include only.
+The Admin Console form and CLI share this contract. The existing form needs a
+Front-End follow-up for absent-config defaults described below; it currently
+reports a missing attribute as an error.
 
 Storage
 -------
@@ -56,11 +57,19 @@ sequence through the Console's authenticated SOAP machinery:
 ```
 
 Parse the XML text in `GetZimletResponse/zimlet/a[@n='zimbraZimletHandlerConfig']`,
-then read `global/property`. Do not take the deployed ZIP's template as current
-configuration. The flush is necessary because raw `zmzimletctl configure` writes
+then read `global/property`. Do not take the source example as current configuration. The flush is necessary because raw `zmzimletctl configure` writes
 LDAP while mailboxd may retain an old zimlet entry. The CLI helper also flushes.
 These operations require full admin privileges; delegated-admin support is not
 part of this delivery. Do not put an admin credential into a JSP or browser code.
+
+The deploy ZIP intentionally contains only the manifest and JS, without
+`config_template.xml`, so redeploy cannot install template defaults. A newly
+created zimlet entry can have no handler config attribute yet. If the entry
+exists and the attribute is absent/blank, readers must use effective defaults:
+enabled=false, label=Login via SSO, url empty. CLI `get` does not persist those
+defaults; the first `set` writes them with any requested changes. Missing global
+properties also use defaults. A missing entry, permission denial, transport/SOAP
+error, or malformed XML remains an error; do not mask it as an empty config.
 
 Admin write
 -----------
@@ -107,14 +116,16 @@ The helper uses admin SOAP to read; it uses `zmzimletctl configure` to write and
 `zmprov fc zimlet com_excellent_login_url_custom` to invalidate cache. For raw CLI workflows:
 
 ```sh
-zmzimletctl getConfigTemplate /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip > /path/writable-by-zimbra/config.xml
-# Edit the XML and validate it against the rules above.
+cp /usr/local/share/zimbra-login-sso/zimlet/config_template.xml /path/writable-by-zimbra/config.xml
+# Explicit config initialization/change only: edit and validate all properties.
 zmzimletctl configure /path/writable-by-zimbra/config.xml
 zmprov fc zimlet com_excellent_login_url_custom
 ```
 
-`getConfigTemplate` returns defaults from the ZIP, not live LDAP values. Use the
-helper's `get` for current settings. LDAP remains the single source of truth.
+The source example is not included in the deploy ZIP. `getConfigTemplate` cannot
+extract defaults from that ZIP; use the helper's `get` for current/effective
+settings. Deployment never requires `configure`; only deliberate config changes
+do. LDAP remains the single source of truth.
 
 Login reader
 ------------
