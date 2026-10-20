@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 NAME = 'com_excellent_login_url_custom'
 def get_config():
     # Raw zmzimletctl configure writes LDAP without invalidating mailboxd's cache.
-    subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', 'zimlet', NAME], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', '-a', 'zimlet', NAME], check=True, stdout=subprocess.DEVNULL)
     response = subprocess.check_output(['/opt/zimbra/bin/zmsoap', '-z', 'GetZimletRequest', '@attrs=zimbraZimletHandlerConfig', 'zimlet', '@name=' + NAME])
     root = ET.fromstring(response)
     for e in root.iter():
@@ -58,7 +58,7 @@ def main():
     with tempfile.NamedTemporaryFile(suffix='.xml') as f:
         f.write(ET.tostring(new, encoding='utf-8', xml_declaration=True)); f.flush()
         subprocess.run(['/opt/zimbra/bin/zmzimletctl', 'configure', f.name], check=True)
-    subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', 'zimlet', NAME], check=True)
+    subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', '-a', 'zimlet', NAME], check=True)
     print('Saved global config in LDAP')
 
 if __name__ == '__main__':
