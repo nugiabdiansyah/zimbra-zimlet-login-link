@@ -1,31 +1,81 @@
-<%-- BEGIN APINK_LOGIN_SSO: global manual link; fail closed without changing local login. --%>
+<%-- BEGIN EXCELLENT_LOGIN_SSO: global manual link; fail closed without changing local login. --%>
 <%
-pageContext.removeAttribute("apinkSsoUrl");
-pageContext.removeAttribute("apinkSsoLabel");
+pageContext.removeAttribute("excellentSsoUrl");
+pageContext.removeAttribute("excellentSsoLabel");
 try {
-    com.zimbra.cs.account.Provisioning apinkProv = com.zimbra.cs.account.Provisioning.getInstance(com.zimbra.cs.account.Provisioning.CacheMode.OFF);
-    com.zimbra.cs.account.Zimlet apinkZimlet = apinkProv.getZimlet("com_excellent_login_url_custom");
-    if (apinkZimlet != null) apinkProv.reload(apinkZimlet);
-    if (apinkZimlet != null && apinkZimlet.getHandlerConfig() != null) {
-        com.zimbra.cs.zimlet.ZimletConfig apinkConfig = new com.zimbra.cs.zimlet.ZimletConfig(apinkZimlet.getHandlerConfig());
-        String apinkUrl = apinkConfig.getGlobalConf("url");
-        String apinkLabel = apinkConfig.getGlobalConf("label");
-        if ("true".equals(apinkConfig.getGlobalConf("enabled")) && apinkUrl != null && apinkUrl.length() <= 2048 && !apinkUrl.matches("(?s).*[\\x00-\\x20\\x7f].*")) {
-            java.net.URI apinkUri = new java.net.URI(apinkUrl);
-            if ("https".equalsIgnoreCase(apinkUri.getScheme()) && apinkUri.getHost() != null && apinkUri.getRawUserInfo() == null && apinkUri.getPort() <= 65535 && !apinkUrl.contains("\\")) {
-                if (apinkLabel == null || apinkLabel.trim().isEmpty()) apinkLabel = "Login via SSO";
-                if (apinkLabel.length() <= 128 && !apinkLabel.matches("(?s).*[\\x00-\\x1f\\x7f].*")) {
-                    pageContext.setAttribute("apinkSsoUrl", apinkUrl);
-                    pageContext.setAttribute("apinkSsoLabel", apinkLabel);
+    com.zimbra.cs.account.Provisioning excellentProv = com.zimbra.cs.account.Provisioning.getInstance(com.zimbra.cs.account.Provisioning.CacheMode.OFF);
+    com.zimbra.cs.account.Zimlet excellentZimlet = excellentProv.getZimlet("com_excellent_login_url_custom");
+    if (excellentZimlet != null) excellentProv.reload(excellentZimlet);
+    if (excellentZimlet != null && excellentZimlet.getHandlerConfig() != null) {
+        com.zimbra.cs.zimlet.ZimletConfig excellentConfig = new com.zimbra.cs.zimlet.ZimletConfig(excellentZimlet.getHandlerConfig());
+        String excellentUrl = excellentConfig.getGlobalConf("url");
+        String excellentLabel = excellentConfig.getGlobalConf("label");
+        if ("true".equals(excellentConfig.getGlobalConf("enabled")) && excellentUrl != null && excellentUrl.length() <= 2048 && !excellentUrl.matches("(?s).*[\\x00-\\x20\\x7f].*")) {
+            java.net.URI excellentUri = new java.net.URI(excellentUrl);
+            if ("https".equalsIgnoreCase(excellentUri.getScheme()) && excellentUri.getHost() != null && excellentUri.getRawUserInfo() == null && excellentUri.getPort() <= 65535 && !excellentUrl.contains("\\")) {
+                if (excellentLabel == null || excellentLabel.trim().isEmpty()) excellentLabel = "Login via SSO";
+                if (excellentLabel.length() <= 128 && !excellentLabel.matches("(?s).*[\\x00-\\x1f\\x7f].*")) {
+                    pageContext.setAttribute("excellentSsoUrl", excellentUrl);
+                    pageContext.setAttribute("excellentSsoLabel", excellentLabel);
                 }
             }
         }
     }
-} catch (Exception | LinkageError apinkUnavailable) {
+} catch (Exception | LinkageError excellentUnavailable) {
     // Missing zimlet, unavailable LDAP or incompatible upgrade: keep local login usable.
 }
 %>
-<c:if test="${not empty apinkSsoUrl}">
-    <div class="apinkSsoLink"><a id="apink-sso-link" href="<c:out value='${apinkSsoUrl}'/>" rel="noreferrer"><c:out value="${apinkSsoLabel}"/></a></div>
+<c:if test="${not empty excellentSsoUrl}">
+<style>
+.excellentSsoContainer {
+    width: 100%;
+    margin-top: 16px;
+    box-sizing: border-box;
+}
+.excellentSsoDivider {
+    border: none;
+    border-top: 1px solid #d9d9d9;
+    margin: 0 0 16px 0;
+    width: 100%;
+}
+.excellentSsoButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 31px;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    background-color: #0088c1;
+    color: #ffffff !important;
+    font-size: 13px;
+    font-family: inherit;
+    text-align: center;
+    text-decoration: none !important;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: normal;
+    transition: background-color 0.15s ease-in-out;
+}
+.excellentSsoButton:hover {
+    background-color: #009adb;
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+.excellentSsoButton:focus,
+.excellentSsoButton:focus-visible {
+    background-color: #009adb;
+    color: #ffffff !important;
+    outline: 2px solid #005a87;
+    outline-offset: 2px;
+}
+.excellentSsoButton:active {
+    background-color: #0077a9;
+}
+</style>
+<div class="excellentSsoContainer">
+    <div class="excellentSsoDivider" role="separator"></div>
+    <a id="excellent-sso-button" class="excellentSsoButton" href="<c:out value='${excellentSsoUrl}'/>" role="button" rel="noreferrer"><c:out value="${excellentSsoLabel}"/></a>
+</div>
 </c:if>
-<%-- END APINK_LOGIN_SSO --%>
+<%-- END EXCELLENT_LOGIN_SSO --%>

@@ -6,14 +6,14 @@
 
 if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["com_excellent_login_url_custom"]) {
 
-    if (!window.ZaApinkLoginSsoLoaded) {
-        window.ZaApinkLoginSsoLoaded = true;
+    if (!window.ZaExcellentLoginSsoLoaded) {
+        window.ZaExcellentLoginSsoLoaded = true;
 
         // ----------------------------------------------------
         // 1. Data Model
         // ----------------------------------------------------
-        function ZaApinkLoginSso() {
-            ZaItem.call(this, "ZaApinkLoginSso");
+        function ZaExcellentLoginSso() {
+            ZaItem.call(this, "ZaExcellentLoginSso");
             this.attrs = {
                 enabled: "false",
                 label: "Login via SSO",
@@ -23,12 +23,12 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             this.type = ZaEvent.S_ZIMLET;
             this.id = "com_excellent_login_url_custom";
         }
-        ZaApinkLoginSso.prototype = new ZaItem();
-        ZaApinkLoginSso.prototype.constructor = ZaApinkLoginSso;
+        ZaExcellentLoginSso.prototype = new ZaItem();
+        ZaExcellentLoginSso.prototype.constructor = ZaExcellentLoginSso;
 
-        ZaApinkLoginSso.DEFAULT_LABEL = "Login via SSO";
+        ZaExcellentLoginSso.DEFAULT_LABEL = "Login via SSO";
 
-        ZaApinkLoginSso.validateInput = function(enabled, label, url) {
+        ZaExcellentLoginSso.validateInput = function(enabled, label, url) {
             if (enabled !== "true" && enabled !== "false") {
                 return "Enabled must be 'true' or 'false'.";
             }
@@ -92,7 +92,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             return null;
         };
 
-        ZaApinkLoginSso.prototype.load = function() {
+        ZaExcellentLoginSso.prototype.load = function() {
             var zName = "com_excellent_login_url_custom";
             var curCtrl = ZaApp.getInstance().getCurrentController();
 
@@ -140,7 +140,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             }
 
             var enabled = "false";
-            var label = ZaApinkLoginSso.DEFAULT_LABEL;
+            var label = ZaExcellentLoginSso.DEFAULT_LABEL;
             var url = "";
 
             var parser = new DOMParser();
@@ -160,22 +160,22 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
 
             this.attrs = {
                 enabled: enabled === "true" ? "true" : "false",
-                label: label || ZaApinkLoginSso.DEFAULT_LABEL,
+                label: label || ZaExcellentLoginSso.DEFAULT_LABEL,
                 url: url || ""
             };
         };
 
-        ZaApinkLoginSso.prototype.save = function(enabled, label, url) {
+        ZaExcellentLoginSso.prototype.save = function(enabled, label, url) {
             if (enabled === undefined && this.attrs) enabled = this.attrs.enabled;
             if (label === undefined && this.attrs) label = this.attrs.label;
             if (url === undefined && this.attrs) url = this.attrs.url;
 
-            var err = ZaApinkLoginSso.validateInput(enabled, label, url);
+            var err = ZaExcellentLoginSso.validateInput(enabled, label, url);
             if (err) {
                 throw new Error(err);
             }
 
-            var normalizedLabel = (label && label.trim().length > 0) ? label : ZaApinkLoginSso.DEFAULT_LABEL;
+            var normalizedLabel = (label && label.trim().length > 0) ? label : ZaExcellentLoginSso.DEFAULT_LABEL;
             var zName = "com_excellent_login_url_custom";
             var uploadUrl = (typeof appContextPath !== "undefined" && appContextPath) ?
                 (appContextPath + "/../service/upload?fmt=extended,raw") : "/service/upload?fmt=extended,raw";
@@ -243,17 +243,17 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             this.load();
         };
 
-        ZaApinkLoginSso.A_enabled = "enabled";
-        ZaApinkLoginSso.A_label = "label";
-        ZaApinkLoginSso.A_url = "url";
+        ZaExcellentLoginSso.A_enabled = "enabled";
+        ZaExcellentLoginSso.A_label = "label";
+        ZaExcellentLoginSso.A_url = "url";
 
-        ZaApinkLoginSso.myXModel = {
+        ZaExcellentLoginSso.myXModel = {
             items: [
                 { id: "name", ref: "name", type: _STRING_ },
                 { id: "type", ref: "type", type: _STRING_ },
-                { id: ZaApinkLoginSso.A_enabled, ref: "attrs/" + ZaApinkLoginSso.A_enabled, type: _STRING_ },
-                { id: ZaApinkLoginSso.A_label, ref: "attrs/" + ZaApinkLoginSso.A_label, type: _STRING_ },
-                { id: ZaApinkLoginSso.A_url, ref: "attrs/" + ZaApinkLoginSso.A_url, type: _STRING_ },
+                { id: ZaExcellentLoginSso.A_enabled, ref: "attrs/" + ZaExcellentLoginSso.A_enabled, type: _STRING_ },
+                { id: ZaExcellentLoginSso.A_label, ref: "attrs/" + ZaExcellentLoginSso.A_label, type: _STRING_ },
+                { id: ZaExcellentLoginSso.A_url, ref: "attrs/" + ZaExcellentLoginSso.A_url, type: _STRING_ },
                 { id: "_statusMsg", ref: "_statusMsg", type: _STRING_ },
                 { id: "_statusStyle", ref: "_statusStyle", type: _STRING_ },
                 { id: ZaModel.currentTab, ref: ZaModel.currentTab, type: _STRING_ }
@@ -263,39 +263,39 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
         // ----------------------------------------------------
         // 2. View Definition
         // ----------------------------------------------------
-        function ZaApinkLoginSsoXFormView(parent, entry) {
+        function ZaExcellentLoginSsoXFormView(parent, entry) {
             ZaTabView.call(this, {
                 parent: parent,
-                iKeyName: "ZaApinkLoginSsoXFormView",
-                contextId: "APINK_LOGIN_SSO"
+                iKeyName: "ZaExcellentLoginSsoXFormView",
+                contextId: "EXCELLENT_LOGIN_SSO"
             });
             this.TAB_INDEX = 0;
-            this.initForm(ZaApinkLoginSso.myXModel, this.getMyXForm(entry), null);
+            this.initForm(ZaExcellentLoginSso.myXModel, this.getMyXForm(entry), null);
         }
-        ZaApinkLoginSsoXFormView.prototype = new ZaTabView();
-        ZaApinkLoginSsoXFormView.prototype.constructor = ZaApinkLoginSsoXFormView;
-        ZaTabView.XFormModifiers["ZaApinkLoginSsoXFormView"] = [];
+        ZaExcellentLoginSsoXFormView.prototype = new ZaTabView();
+        ZaExcellentLoginSsoXFormView.prototype.constructor = ZaExcellentLoginSsoXFormView;
+        ZaTabView.XFormModifiers["ZaExcellentLoginSsoXFormView"] = [];
 
-        ZaApinkLoginSsoXFormView.prototype.getTitle = function() {
+        ZaExcellentLoginSsoXFormView.prototype.getTitle = function() {
             return "Login via SSO";
         };
-        ZaApinkLoginSsoXFormView.prototype.getTabIcon = function() {
+        ZaExcellentLoginSsoXFormView.prototype.getTabIcon = function() {
             return "Zimlet";
         };
-        ZaApinkLoginSsoXFormView.prototype.getTabTitle = function() {
+        ZaExcellentLoginSsoXFormView.prototype.getTabTitle = function() {
             return this.getTitle();
         };
-        ZaApinkLoginSsoXFormView.prototype.getTabToolTip = function() {
+        ZaExcellentLoginSsoXFormView.prototype.getTabToolTip = function() {
             return this.getTitle();
         };
 
-        ZaApinkLoginSsoXFormView.prototype.setObject = function(entry) {
+        ZaExcellentLoginSsoXFormView.prototype.setObject = function(entry) {
             this._containedObject = {
                 name: entry.name || "com_excellent_login_url_custom",
                 type: entry.type || ZaEvent.S_ZIMLET,
                 attrs: {
                     enabled: entry.attrs && entry.attrs.enabled === "true" ? "true" : "false",
-                    label: (entry.attrs && entry.attrs.label) || ZaApinkLoginSso.DEFAULT_LABEL,
+                    label: (entry.attrs && entry.attrs.label) || ZaExcellentLoginSso.DEFAULT_LABEL,
                     url: (entry.attrs && entry.attrs.url) || ""
                 },
                 _statusMsg: entry._statusMsg || "",
@@ -305,13 +305,13 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             this._localXForm.setInstance(this._containedObject);
         };
 
-        ZaApinkLoginSsoXFormView.prototype.getMyXForm = function(entry) {
+        ZaExcellentLoginSsoXFormView.prototype.getMyXForm = function(entry) {
             var xForm = {
                 tableCssStyle: "width:100%;overflow:auto;",
                 items: []
             };
-            if (ZaTabView.XFormModifiers["ZaApinkLoginSsoXFormView"]) {
-                var mods = ZaTabView.XFormModifiers["ZaApinkLoginSsoXFormView"];
+            if (ZaTabView.XFormModifiers["ZaExcellentLoginSsoXFormView"]) {
+                var mods = ZaTabView.XFormModifiers["ZaExcellentLoginSsoXFormView"];
                 for (var i = 0; i < mods.length; i++) {
                     mods[i].call(this, xForm, entry);
                 }
@@ -319,7 +319,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             return xForm;
         };
 
-        ZaApinkLoginSsoXFormView.myXFormModifier = function(xFormObject, entry) {
+        ZaExcellentLoginSsoXFormView.myXFormModifier = function(xFormObject, entry) {
             var tabKey = ++this.TAB_INDEX;
             this.tabChoices = [
                 { value: tabKey, label: "SSO Configuration" }
@@ -365,30 +365,30 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
                                             var border = isErr ? "#fad2cf" : "#ceead6";
                                             var color = isErr ? "#c5221f" : "#137333";
                                             var icon = isErr ? "✕ " : "✓ ";
-                                            return '<div id="apink_sso_status_box" style="padding:10px 14px; margin:4px 0 14px 0; border:1px solid ' + border + '; background:' + bg + '; color:' + color + '; font-weight:600; font-size:13px; border-radius:4px;">' + icon + AjxStringUtil.htmlEncode(val) + '</div>';
+                                            return '<div id="excellent_sso_status_box" style="padding:10px 14px; margin:4px 0 14px 0; border:1px solid ' + border + '; background:' + bg + '; color:' + color + '; font-weight:600; font-size:13px; border-radius:4px;">' + icon + AjxStringUtil.htmlEncode(val) + '</div>';
                                         }
                                     },
                                     {
-                                        ref: ZaApinkLoginSso.A_enabled,
+                                        ref: ZaExcellentLoginSso.A_enabled,
                                         type: _CHECKBOX_,
-                                        id: "apink_sso_enabled_input",
+                                        id: "excellent_sso_enabled_input",
                                         label: "Enable SSO Link",
                                         trueValue: "true",
                                         falseValue: "false",
                                         subLabel: "Show the SSO login link on the web sign-in screen"
                                     },
                                     {
-                                        ref: ZaApinkLoginSso.A_label,
+                                        ref: ZaExcellentLoginSso.A_label,
                                         type: _TEXTFIELD_,
-                                        id: "apink_sso_label_input",
+                                        id: "excellent_sso_label_input",
                                         label: "Button / Link Label",
                                         width: "350px",
                                         toolTipContent: "Text displayed on the link. Defaults to 'Login via SSO' if blank (max 128 chars)."
                                     },
                                     {
-                                        ref: ZaApinkLoginSso.A_url,
+                                        ref: ZaExcellentLoginSso.A_url,
                                         type: _TEXTFIELD_,
-                                        id: "apink_sso_url_input",
+                                        id: "excellent_sso_url_input",
                                         label: "SSO Login URL",
                                         width: "480px",
                                         toolTipContent: "Absolute HTTPS URL to the SSO login endpoint (max 2048 chars). Required when enabled."
@@ -403,19 +403,19 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
                                             {
                                                 type: _DWT_BUTTON_,
                                                 label: "Save Changes",
-                                                id: "apink_sso_save_btn",
+                                                id: "excellent_sso_save_btn",
                                                 width: 130,
                                                 onActivate: function() {
-                                                    ZaApinkLoginSsoViewController.onSaveClicked.call(this);
+                                                    ZaExcellentLoginSsoViewController.onSaveClicked.call(this);
                                                 }
                                             },
                                             {
                                                 type: _DWT_BUTTON_,
                                                 label: "Reload",
-                                                id: "apink_sso_reload_btn",
+                                                id: "excellent_sso_reload_btn",
                                                 width: 110,
                                                 onActivate: function() {
-                                                    ZaApinkLoginSsoViewController.onReloadClicked.call(this);
+                                                    ZaExcellentLoginSsoViewController.onReloadClicked.call(this);
                                                 }
                                             },
                                             { type: _CELLSPACER_ }
@@ -445,25 +445,25 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
                 }
             ];
         };
-        ZaTabView.XFormModifiers["ZaApinkLoginSsoXFormView"].push(ZaApinkLoginSsoXFormView.myXFormModifier);
+        ZaTabView.XFormModifiers["ZaExcellentLoginSsoXFormView"].push(ZaExcellentLoginSsoXFormView.myXFormModifier);
 
         // ----------------------------------------------------
         // 3. Controller
         // ----------------------------------------------------
-        function ZaApinkLoginSsoViewController(appCtxt, container) {
-            ZaXFormViewController.call(this, appCtxt, container, "ZaApinkLoginSsoViewController");
+        function ZaExcellentLoginSsoViewController(appCtxt, container) {
+            ZaXFormViewController.call(this, appCtxt, container, "ZaExcellentLoginSsoViewController");
             this._UICreated = false;
             this.objType = ZaEvent.S_ZIMLET;
-            this.tabConstructor = ZaApinkLoginSsoXFormView;
+            this.tabConstructor = ZaExcellentLoginSsoXFormView;
         }
-        ZaApinkLoginSsoViewController.prototype = new ZaXFormViewController();
-        ZaApinkLoginSsoViewController.prototype.constructor = ZaApinkLoginSsoViewController;
+        ZaExcellentLoginSsoViewController.prototype = new ZaXFormViewController();
+        ZaExcellentLoginSsoViewController.prototype.constructor = ZaExcellentLoginSsoViewController;
 
-        ZaController.initPopupMenuMethods["ZaApinkLoginSsoViewController"] = [];
-        ZaController.setViewMethods["ZaApinkLoginSsoViewController"] = [];
-        ZaController.changeActionsStateMethods["ZaApinkLoginSsoViewController"] = [];
+        ZaController.initPopupMenuMethods["ZaExcellentLoginSsoViewController"] = [];
+        ZaController.setViewMethods["ZaExcellentLoginSsoViewController"] = [];
+        ZaController.changeActionsStateMethods["ZaExcellentLoginSsoViewController"] = [];
 
-        ZaApinkLoginSsoViewController.prototype.getAppBarAction = function() {
+        ZaExcellentLoginSsoViewController.prototype.getAppBarAction = function() {
             if (AjxUtil.isEmpty(this._appbarOperation)) {
                 this._appbarOperation[ZaOperation.SAVE] = new ZaOperation(ZaOperation.SAVE, ZaMsg.TBB_Save, ZaMsg.ALTBB_Save_tt, "Save", "SaveDis", new AjxListener(this, this.saveButtonListener));
                 this._appbarOperation[ZaOperation.CLOSE] = new ZaOperation(ZaOperation.CLOSE, ZaMsg.TBB_Close, ZaMsg.ALTBB_Close_tt, "Close", "CloseDis", new AjxListener(this, this.closeButtonListener));
@@ -471,7 +471,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             return this._appbarOperation;
         };
 
-        ZaApinkLoginSsoViewController.prototype.getAppBarOrder = function() {
+        ZaExcellentLoginSsoViewController.prototype.getAppBarOrder = function() {
             if (AjxUtil.isEmpty(this._appbarOrder)) {
                 this._appbarOrder.push(ZaOperation.SAVE);
                 this._appbarOrder.push(ZaOperation.CLOSE);
@@ -479,17 +479,17 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             return this._appbarOrder;
         };
 
-        ZaApinkLoginSsoViewController.prototype.saveButtonListener = function() {
+        ZaExcellentLoginSsoViewController.prototype.saveButtonListener = function() {
             if (this._view && this._view._localXForm) {
-                var saveBtn = this._view._localXForm.getItemsById("apink_sso_save_btn");
+                var saveBtn = this._view._localXForm.getItemsById("excellent_sso_save_btn");
                 if (saveBtn && saveBtn[0]) {
-                    ZaApinkLoginSsoViewController.onSaveClicked.call(saveBtn[0]);
+                    ZaExcellentLoginSsoViewController.onSaveClicked.call(saveBtn[0]);
                     return;
                 }
             }
         };
 
-        ZaApinkLoginSsoViewController.setViewMethod = function(item) {
+        ZaExcellentLoginSsoViewController.setViewMethod = function(item) {
             if (!this._UICreated) {
                 this._initPopupMenu();
                 this._contentView = this._view = new this.tabConstructor(this._container, item);
@@ -501,7 +501,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             }
             ZaApp.getInstance().pushView(this.getContentViewId());
             if (!item || !item.attrs) {
-                item = new ZaApinkLoginSso();
+                item = new ZaExcellentLoginSso();
                 item.load();
             }
             this._currentObject = item;
@@ -509,11 +509,11 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             this._view.setDirty(false);
             this._view.setObject(item);
         };
-        ZaController.setViewMethods["ZaApinkLoginSsoViewController"].push(ZaApinkLoginSsoViewController.setViewMethod);
+        ZaController.setViewMethods["ZaExcellentLoginSsoViewController"].push(ZaExcellentLoginSsoViewController.setViewMethod);
 
-        ZaApinkLoginSsoViewController.prototype.show = function(entry) {
+        ZaExcellentLoginSsoViewController.prototype.show = function(entry) {
             if (!entry) {
-                entry = new ZaApinkLoginSso();
+                entry = new ZaExcellentLoginSso();
                 entry.load();
             }
             if (!this.selectExistingTabByItemId(entry.id)) {
@@ -521,25 +521,25 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             }
         };
 
-        ZaApinkLoginSsoViewController.onSaveClicked = function() {
+        ZaExcellentLoginSsoViewController.onSaveClicked = function() {
             var form = this.getForm();
             var instance = form.getInstance();
             var attrs = instance.attrs || {};
 
-            var enabledInput = document.getElementById("ztabv__APINK_LOGIN_SSO_apink_sso_enabled_input");
+            var enabledInput = document.getElementById("ztabv__EXCELLENT_LOGIN_SSO_excellent_sso_enabled_input");
             var enabled = enabledInput ? (enabledInput.checked ? "true" : "false") : (attrs.enabled === "true" ? "true" : "false");
 
-            var labelInput = document.getElementById("ztabv__APINK_LOGIN_SSO_apink_sso_label_input");
-            var label = labelInput ? labelInput.value : ((attrs.label !== undefined && attrs.label !== null) ? attrs.label : ZaApinkLoginSso.DEFAULT_LABEL);
+            var labelInput = document.getElementById("ztabv__EXCELLENT_LOGIN_SSO_excellent_sso_label_input");
+            var label = labelInput ? labelInput.value : ((attrs.label !== undefined && attrs.label !== null) ? attrs.label : ZaExcellentLoginSso.DEFAULT_LABEL);
 
-            var urlInput = document.getElementById("ztabv__APINK_LOGIN_SSO_apink_sso_url_input");
+            var urlInput = document.getElementById("ztabv__EXCELLENT_LOGIN_SSO_excellent_sso_url_input");
             var url = urlInput ? urlInput.value : ((attrs.url !== undefined && attrs.url !== null) ? attrs.url : "");
 
             attrs.enabled = enabled;
             attrs.label = label;
             attrs.url = url;
 
-            var valErr = ZaApinkLoginSso.validateInput(enabled, label, url);
+            var valErr = ZaExcellentLoginSso.validateInput(enabled, label, url);
             if (valErr) {
                 instance._statusMsg = valErr;
                 instance._statusStyle = "error";
@@ -548,8 +548,8 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             }
 
             try {
-                var ctrl = ZaApp.getInstance().getApinkLoginSsoController();
-                var model = ctrl._currentObject || new ZaApinkLoginSso();
+                var ctrl = ZaApp.getInstance().getExcellentLoginSsoController();
+                var model = ctrl._currentObject || new ZaExcellentLoginSso();
                 model.save(enabled, label, url);
                 ctrl._currentObject = model;
                 ctrl._view.setObject(model);
@@ -572,12 +572,12 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             }
         };
 
-        ZaApinkLoginSsoViewController.onReloadClicked = function() {
+        ZaExcellentLoginSsoViewController.onReloadClicked = function() {
             var form = this.getForm();
             var instance = form.getInstance();
             try {
-                var ctrl = ZaApp.getInstance().getApinkLoginSsoController();
-                var model = ctrl._currentObject || new ZaApinkLoginSso();
+                var ctrl = ZaApp.getInstance().getExcellentLoginSsoController();
+                var model = ctrl._currentObject || new ZaExcellentLoginSso();
                 model.load();
                 ctrl._currentObject = model;
                 ctrl._view.setObject(model);
@@ -600,29 +600,29 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
         // ----------------------------------------------------
         // 4. Registration & Navigation Hooks
         // ----------------------------------------------------
-        ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW = ZaZimbraAdmin.VIEW_INDEX++;
+        ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW = ZaZimbraAdmin.VIEW_INDEX++;
 
-        ZaApp.prototype.getApinkLoginSsoController = function() {
-            if (!this._controllers[ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW]) {
-                this._controllers[ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW] = new ZaApinkLoginSsoViewController(this._appCtxt, this._container);
+        ZaApp.prototype.getExcellentLoginSsoController = function() {
+            if (!this._controllers[ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW]) {
+                this._controllers[ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW] = new ZaExcellentLoginSsoViewController(this._appCtxt, this._container);
             }
-            return this._controllers[ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW];
+            return this._controllers[ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW];
         };
 
         // Tree modifier (under Configure -> Login via SSO)
-        ZaApinkLoginSso.treeModifier = function(tree) {
+        ZaExcellentLoginSso.treeModifier = function(tree) {
             try {
                 var parentPath = ZaTree.getPathByArray([ZaMsg.OVP_home, ZaMsg.OVP_configure]);
                 var ti = new ZaTreeItemData({
                     parent: parentPath,
                     id: ZaId.getTreeItemId(ZaId.PANEL_APP, ZaId.PANEL_CONFIGURATION, null, "LoginSSOHV"),
                     text: "Login via SSO",
-                    mappingId: ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW
+                    mappingId: ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW
                 });
                 tree.addTreeItemData(ti);
                 if (ZaOverviewPanelController.overviewTreeListeners) {
-                    ZaOverviewPanelController.overviewTreeListeners[ZaZimbraAdmin._APINK_LOGIN_SSO_VIEW] = function(ev) {
-                        var controller = ZaApp.getInstance().getApinkLoginSsoController();
+                    ZaOverviewPanelController.overviewTreeListeners[ZaZimbraAdmin._EXCELLENT_LOGIN_SSO_VIEW] = function(ev) {
+                        var controller = ZaApp.getInstance().getExcellentLoginSsoController();
                         if (ZaApp.getInstance().getCurrentController()) {
                             ZaApp.getInstance().getCurrentController().switchToNextView(controller, controller.show, []);
                         } else {
@@ -636,7 +636,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
         };
 
         if (ZaOverviewPanelController.treeModifiers) {
-            ZaOverviewPanelController.treeModifiers.push(ZaApinkLoginSso.treeModifier);
+            ZaOverviewPanelController.treeModifiers.push(ZaExcellentLoginSso.treeModifier);
         }
 
         // Double-click hook on Zimlets / Admin Extensions list
@@ -644,7 +644,7 @@ if (window.ZaSettings && ZaSettings.EnabledZimlet && ZaSettings.EnabledZimlet["c
             var _origZimletShow = ZaZimletViewController.prototype.show;
             ZaZimletViewController.prototype.show = function(entry, skipRefresh) {
                 if (entry && entry.name === "com_excellent_login_url_custom") {
-                    var ssoCtrl = ZaApp.getInstance().getApinkLoginSsoController();
+                    var ssoCtrl = ZaApp.getInstance().getExcellentLoginSsoController();
                     if (this.switchToNextView) {
                         this.switchToNextView(ssoCtrl, ssoCtrl.show, [entry]);
                     } else {

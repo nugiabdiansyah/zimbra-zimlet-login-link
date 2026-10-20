@@ -9,13 +9,45 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 BASELINE = 'be483e682a7ecabd5a500fabe26d2b292f01aa5cebc42b22296a95af559eab40'
-ANCHOR = b'<button id="loginButton" type="submit" tabindex="5" class="loginButton"><fmt:message key="login"/></button>'
+ANCHOR = (
+    b'                                    <div class="signInAndLabel">\n'
+    b'                                        <div>\n'
+    b'                                            <button id="loginButton" type="submit" tabindex="5" class="loginButton"><fmt:message key="login"/></button>\n'
+    b'                                        </div>\n'
+    b'                                        <c:set var="isSignedInDisabled" value="${domainInfo.attrs.zimbraWebClientStaySignedInDisabled}"/>\n'
+    b'                                        <c:if test="${isSignedInDisabled eq false}">\n'
+    b'                                            <div class="rememberCheckWrapper"> \n'
+    b'                                                <input id="remember" tabindex="6" value="1" type="checkbox" name="zrememberme" />\n'
+    b'                                                <label id="remember" for="remember"><fmt:message key="rememberMe"/></label>\n'
+    b'                                            </div>\n'
+    b'                                        </c:if>\n'
+    b'                                    </div>'
+)
+
+LEGACY_ID = bytes.fromhex('4150494e4b')
+LEGACY_MARKER = b'BEGIN ' + LEGACY_ID + b'_LOGIN_SSO'
+
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
+def strip_patch(data):
+    if b'BEGIN EXCELLENT_LOGIN_SSO' in data:
+        start_idx = data.find(b'\n<%-- BEGIN EXCELLENT_LOGIN_SSO')
+        end_str = b'<%-- END EXCELLENT_LOGIN_SSO --%>\n'
+        end_idx = data.find(end_str)
+        if start_idx != -1 and end_idx != -1:
+            return data[:start_idx] + data[end_idx + len(end_str):], 'new'
+    if LEGACY_MARKER in data:
+        start_idx = data.find(b'\n<%-- BEGIN ' + LEGACY_ID + b'_LOGIN_SSO')
+        end_str = b'<%-- END ' + LEGACY_ID + b'_LOGIN_SSO --%>\n'
+        end_idx = data.find(end_str)
+        if start_idx != -1 and end_idx != -1:
+            return data[:start_idx] + data[end_idx + len(end_str):], 'legacy'
+    return data, None
+
 def replace(target, data):
     stat = target.stat()
-    fd, name = tempfile.mkstemp(prefix='.apink-sso-', dir=target.parent)
+    fd, name = tempfile.mkstemp(prefix='.excellent-sso-', dir=target.parent)
     try:
         with os.fdopen(fd, 'wb') as f:
             os.fchmod(f.fileno(), stat.st_mode)
@@ -42,8 +74,11 @@ def main():
     backup = backups / ('login.jsp.' + a.expected_sha)
     fragment = (ROOT / 'patch/link.jsp.fragment').read_bytes().rstrip() + b'\n'
     current = target.read_bytes()
+
+    stripped, kind = strip_patch(current)
+
     if a.action == 'apply':
-        if b'BEGIN APINK_LOGIN_SSO' in current:
+        if kind == 'new':
             if not backup.exists() or digest(backup.read_bytes()) != a.expected_sha:
                 raise SystemExit('Missing or damaged baseline backup; refusing')
             expected = backup.read_bytes().replace(ANCHOR, ANCHOR + b'\n' + fragment)
@@ -51,6 +86,18 @@ def main():
                 raise SystemExit('Existing patch differs; review before applying')
             print('Already applied; unchanged')
             return
+
+        if kind == 'legacy':
+            if not backup.exists() or digest(backup.read_bytes()) != a.expected_sha:
+                raise SystemExit('Missing or damaged baseline backup; refusing to migrate')
+            if digest(stripped) != a.expected_sha:
+                raise SystemExit('Legacy patched file differs from baseline; refusing to migrate')
+            updated = stripped.replace(ANCHOR, ANCHOR + b'\n' + fragment)
+            replace(target, updated)
+            print('migrated: SHA256=' + digest(updated))
+            return
+
+        # Not patched yet
         if digest(current) != a.expected_sha or current.count(ANCHOR) != 1:
             raise SystemExit('Baseline/checkpoint mismatch; review vendor changes first')
         if backup.exists():
@@ -60,19 +107,29 @@ def main():
             shutil.copy2(target, backup)
             backup.chmod(0o600)
         updated = current.replace(ANCHOR, ANCHOR + b'\n' + fragment)
-    else:
+        replace(target, updated)
+        print(a.action + ': SHA256=' + digest(updated))
+
+    else:  # rollback
+        if not backup.exists():
+            raise SystemExit('Missing baseline backup; refusing')
         original = backup.read_bytes()
         if digest(original) != a.expected_sha:
             raise SystemExit('Backup checksum mismatch; refusing')
-        expected = original.replace(ANCHOR, ANCHOR + b'\n' + fragment)
+
+        if kind is not None:
+            if digest(stripped) != a.expected_sha:
+                raise SystemExit('Current JSP changed since patch; refusing to overwrite')
+            updated = original
+            replace(target, updated)
+            print(a.action + ': SHA256=' + digest(updated))
+            return
+
         if current == original:
             print('Already rolled back; unchanged')
             return
-        if current != expected:
-            raise SystemExit('Current JSP changed since patch; refusing to overwrite')
-        updated = original
-    replace(target, updated)
-    print(a.action + ': SHA256=' + digest(updated))
+
+        raise SystemExit('Current JSP does not contain patch or match baseline; refusing to overwrite')
 
 if __name__ == '__main__':
     main()
