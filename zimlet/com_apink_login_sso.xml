@@ -1,3 +1,0 @@
-<zimlet name="com_apink_login_sso" version="1.0.0" label="Login SSO link" description="Global manual SSO login link configuration" extension="true">
-  <include>com_apink_login_sso.js</include>
-</zimlet>

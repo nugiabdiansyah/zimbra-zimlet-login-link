@@ -14,8 +14,8 @@ Default configuration is disabled, with label `Login via SSO` and an empty URL.
 
 ```text
 zimlet/
-  com_apink_login_sso.xml       Admin-extension manifest
-  com_apink_login_sso.js        Reserved for the Admin Console form
+  com_excellent_login_url_custom.xml       Admin-extension manifest
+  com_excellent_login_url_custom.js        Reserved for the Admin Console form
   config_template.xml          Default global settings
 patch/
   link.jsp.fragment            Server-side lookup and escaped manual link
@@ -39,7 +39,7 @@ From a reviewed checkout of this repository, build the zimlet ZIP:
 
 ```sh
 mkdir -p dist
-(cd zimlet && python3 -m zipfile -c ../dist/com_apink_login_sso.zip com_apink_login_sso.xml com_apink_login_sso.js config_template.xml)
+(cd zimlet && python3 -m zipfile -c ../dist/com_excellent_login_url_custom.zip com_excellent_login_url_custom.xml com_excellent_login_url_custom.js config_template.xml)
 ```
 
 Copy only the selected source files and the generated ZIP. Replace
@@ -47,7 +47,7 @@ Copy only the selected source files and the generated ZIP. Replace
 
 ```sh
 ssh root@YOUR-ZIMBRA-HOST 'install -d -m 0755 /usr/local/share/zimbra-login-sso'
-scp -r zimlet patch patch-login.py sso-config.py CONTRACT.md README.md dist/com_apink_login_sso.zip root@YOUR-ZIMBRA-HOST:/usr/local/share/zimbra-login-sso/
+scp -r zimlet patch patch-login.py sso-config.py CONTRACT.md README.md dist/com_excellent_login_url_custom.zip root@YOUR-ZIMBRA-HOST:/usr/local/share/zimbra-login-sso/
 ```
 
 These commands repopulate `/usr/local/share/zimbra-login-sso` from repo source;
@@ -71,10 +71,10 @@ Skip that export on the first installation, when the LDAP entry does not exist.
 Never commit this runtime export. Then, as `zimbra`:
 
 ```sh
-zmzimletctl deploy /usr/local/share/zimbra-login-sso/com_apink_login_sso.zip
+zmzimletctl deploy /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip
 # Existing installations only: restore the exported settings.
 zmzimletctl configure "$HOME/login-sso-before-deploy.xml"
-zmprov fc zimlet com_apink_login_sso
+zmprov fc zimlet com_excellent_login_url_custom
 ```
 
 On first installation, omit `configure` and retain the disabled defaults. Source
@@ -112,11 +112,21 @@ Use your real HTTPS login URL. Never include credentials or secret tokens in the
 URL: the enabled link is public. The helper reads live LDAP via admin SOAP and
 writes with `zmzimletctl configure`, invalidating the zimlet cache afterwards.
 For a raw CLI workflow, extract defaults with `zmzimletctl getConfigTemplate
-/usr/local/share/zimbra-login-sso/com_apink_login_sso.zip`, edit the XML, then run
-`zmzimletctl configure <config.xml>` and `zmprov fc zimlet com_apink_login_sso`.
+/usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip`, edit the XML, then run
+`zmzimletctl configure <config.xml>` and `zmprov fc zimlet com_excellent_login_url_custom`.
 `getConfigTemplate` reads ZIP defaults, not the current live settings.
 
 ## Upgrade and re-apply
+
+When replacing a previous package identifier, retain its LDAP entry and deployed
+files until the Admin Console form has moved. Copy only `enabled`, `label`, and
+`url` into a config document named `com_excellent_login_url_custom`, then install
+that document after deploying the new package. Before replacing the installed
+fragment, use the installed `patch-login.py rollback` with its matching fragment
+to restore the vendor JSP. Retain that script/fragment in a protected migration
+backup, install the new source, then apply the new fragment. Keep the original
+vendor backup and schedule only one restart after both steps. Configs in the two
+LDAP entries are independent after the copy; future edits target the new entry.
 
 Back up LDAP, this source directory and its runtime `backups/` before upgrading.
 After an upgrade, review the new vendor JSP, insertion anchor and API

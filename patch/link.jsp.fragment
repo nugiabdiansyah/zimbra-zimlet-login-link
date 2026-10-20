@@ -4,7 +4,7 @@ pageContext.removeAttribute("apinkSsoUrl");
 pageContext.removeAttribute("apinkSsoLabel");
 try {
     com.zimbra.cs.account.Provisioning apinkProv = com.zimbra.cs.account.Provisioning.getInstance(com.zimbra.cs.account.Provisioning.CacheMode.OFF);
-    com.zimbra.cs.account.Zimlet apinkZimlet = apinkProv.getZimlet("com_apink_login_sso");
+    com.zimbra.cs.account.Zimlet apinkZimlet = apinkProv.getZimlet("com_excellent_login_url_custom");
     if (apinkZimlet != null) apinkProv.reload(apinkZimlet);
     if (apinkZimlet != null && apinkZimlet.getHandlerConfig() != null) {
         com.zimbra.cs.zimlet.ZimletConfig apinkConfig = new com.zimbra.cs.zimlet.ZimletConfig(apinkZimlet.getHandlerConfig());

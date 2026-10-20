@@ -1,4 +1,4 @@
-Backend contract — com_apink_login_sso, version 1.0.0
+Backend contract — com_excellent_login_url_custom, version 1.0.0
 ===================================================
 
 Scope: one global optional manual link, all domains. No SSO protocol integration.
@@ -8,11 +8,11 @@ zimlet currently contains its manifest and a reserved JS include only.
 Storage
 -------
 
-Existing LDAP zimlet entry `com_apink_login_sso`, existing attribute
+Existing LDAP zimlet entry `com_excellent_login_url_custom`, existing attribute
 `zimbraZimletHandlerConfig`. No schema additions. XML:
 
 ```xml
-<zimletConfig name="com_apink_login_sso" version="1.0.0">
+<zimletConfig name="com_excellent_login_url_custom" version="1.0.0">
   <global>
     <property name="enabled">false</property>
     <property name="label">Login via SSO</property>
@@ -45,13 +45,13 @@ sequence through the Console's authenticated SOAP machinery:
 
 ```xml
 <FlushCacheRequest xmlns="urn:zimbraAdmin">
-  <cache type="zimlet"><entry by="name">com_apink_login_sso</entry></cache>
+  <cache type="zimlet"><entry by="name">com_excellent_login_url_custom</entry></cache>
 </FlushCacheRequest>
 ```
 
 ```xml
 <GetZimletRequest xmlns="urn:zimbraAdmin" attrs="zimbraZimletHandlerConfig">
-  <zimlet name="com_apink_login_sso"/>
+  <zimlet name="com_excellent_login_url_custom"/>
 </GetZimletRequest>
 ```
 
@@ -104,13 +104,13 @@ python3 /usr/local/share/zimbra-login-sso/sso-config.py set --enabled false
 ```
 
 The helper uses admin SOAP to read; it uses `zmzimletctl configure` to write and
-`zmprov fc zimlet com_apink_login_sso` to invalidate cache. For raw CLI workflows:
+`zmprov fc zimlet com_excellent_login_url_custom` to invalidate cache. For raw CLI workflows:
 
 ```sh
-zmzimletctl getConfigTemplate /usr/local/share/zimbra-login-sso/com_apink_login_sso.zip > /path/writable-by-zimbra/config.xml
+zmzimletctl getConfigTemplate /usr/local/share/zimbra-login-sso/com_excellent_login_url_custom.zip > /path/writable-by-zimbra/config.xml
 # Edit the XML and validate it against the rules above.
 zmzimletctl configure /path/writable-by-zimbra/config.xml
-zmprov fc zimlet com_apink_login_sso
+zmprov fc zimlet com_excellent_login_url_custom
 ```
 
 `getConfigTemplate` returns defaults from the ZIP, not live LDAP values. Use the

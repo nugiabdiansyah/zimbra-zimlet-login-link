@@ -7,7 +7,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 from urllib.parse import urlsplit
 
-NAME = 'com_apink_login_sso'
+NAME = 'com_excellent_login_url_custom'
 def get_config():
     # Raw zmzimletctl configure writes LDAP without invalidating mailboxd's cache.
     subprocess.run(['/opt/zimbra/bin/zmprov', 'fc', 'zimlet', NAME], check=True, stdout=subprocess.DEVNULL)
