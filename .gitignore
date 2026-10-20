@@ -1,0 +1,18 @@
+# Runtime configuration and private material
+.env
+.env.*
+*.pem
+*.key
+login-sso-before-deploy.xml
+
+# Generated artifacts and server-local material
+dist/
+backups/
+evidence/
+*.zip
+*.tar.gz
+*.class
+__pycache__/
+*.pyc
+patch/login.jsp
+patch/login.jsp.original

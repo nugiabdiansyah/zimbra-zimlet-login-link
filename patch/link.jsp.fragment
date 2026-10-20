@@ -1,0 +1,31 @@
+<%-- BEGIN APINK_LOGIN_SSO: global manual link; fail closed without changing local login. --%>
+<%
+pageContext.removeAttribute("apinkSsoUrl");
+pageContext.removeAttribute("apinkSsoLabel");
+try {
+    com.zimbra.cs.account.Provisioning apinkProv = com.zimbra.cs.account.Provisioning.getInstance(com.zimbra.cs.account.Provisioning.CacheMode.OFF);
+    com.zimbra.cs.account.Zimlet apinkZimlet = apinkProv.getZimlet("com_apink_login_sso");
+    if (apinkZimlet != null) apinkProv.reload(apinkZimlet);
+    if (apinkZimlet != null && apinkZimlet.getHandlerConfig() != null) {
+        com.zimbra.cs.zimlet.ZimletConfig apinkConfig = new com.zimbra.cs.zimlet.ZimletConfig(apinkZimlet.getHandlerConfig());
+        String apinkUrl = apinkConfig.getGlobalConf("url");
+        String apinkLabel = apinkConfig.getGlobalConf("label");
+        if ("true".equals(apinkConfig.getGlobalConf("enabled")) && apinkUrl != null && apinkUrl.length() <= 2048 && !apinkUrl.matches("(?s).*[\\x00-\\x20\\x7f].*")) {
+            java.net.URI apinkUri = new java.net.URI(apinkUrl);
+            if ("https".equalsIgnoreCase(apinkUri.getScheme()) && apinkUri.getHost() != null && apinkUri.getRawUserInfo() == null && apinkUri.getPort() <= 65535 && !apinkUrl.contains("\\")) {
+                if (apinkLabel == null || apinkLabel.trim().isEmpty()) apinkLabel = "Login via SSO";
+                if (apinkLabel.length() <= 128 && !apinkLabel.matches("(?s).*[\\x00-\\x1f\\x7f].*")) {
+                    pageContext.setAttribute("apinkSsoUrl", apinkUrl);
+                    pageContext.setAttribute("apinkSsoLabel", apinkLabel);
+                }
+            }
+        }
+    }
+} catch (Exception | LinkageError apinkUnavailable) {
+    // Missing zimlet, unavailable LDAP or incompatible upgrade: keep local login usable.
+}
+%>
+<c:if test="${not empty apinkSsoUrl}">
+    <div class="apinkSsoLink"><a id="apink-sso-link" href="<c:out value='${apinkSsoUrl}'/>" rel="noreferrer"><c:out value="${apinkSsoLabel}"/></a></div>
+</c:if>
+<%-- END APINK_LOGIN_SSO --%>

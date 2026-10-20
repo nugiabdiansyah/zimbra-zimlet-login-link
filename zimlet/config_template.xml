@@ -1,0 +1,7 @@
+<zimletConfig name="com_apink_login_sso" version="1.0.0">
+  <global>
+    <property name="enabled">false</property>
+    <property name="label">Login via SSO</property>
+    <property name="url"></property>
+  </global>
+</zimletConfig>
